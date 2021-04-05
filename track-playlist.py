@@ -43,9 +43,7 @@ def addTrackUris(playlist):
         print(err)
         return
 
-    temptrackuris = [track['track']['uri'] for track in tracks if datetime.datetime.strptime(track['added_at'], '%Y-%m-%dT%H:%M:%SZ') > offset and track['track'] is not None and track['track']['id'] is not None]
-    if temptrackuris:
-        trackuris.extend(temptrackuris)
+    temptracks.extend(tracks)
 
 if __name__ == '__main__':
     with open(sys.path[0] + '/data.json', 'r') as f:
@@ -63,7 +61,7 @@ sp = spotifywebapi.Spotify(CLIENT_ID, CLIENT_SECRET)
 executor = ThreadPoolExecutor()
 topfutures = []
 bottomfutures = []
-trackuris = []
+temptracks = []
 for user in users:
     topfutures.append(executor.submit(runUser, user))
 
@@ -71,13 +69,15 @@ wait(topfutures)
 wait(bottomfutures)
 print('Finished pulling tracks')
 executor.shutdown()
-trackurisset = set(trackuris)
-me = sp.getAuthUser(REFRESH_TOKEN)
-playlist = sp.getPlaylistFromId(TRACK_PLAYLIST_ID)
-playlisttracks = sp.getTracksFromItem(playlist)
-playlisttracksset = {i['track']['uri'] for i in playlisttracks}
-newtracksset = trackurisset - playlisttracksset
-me.addSongsToPlaylist(TRACK_PLAYLIST_ID, list(newtracksset))
+trackuris = [track['track']['uri'] for track in temptracks if datetime.datetime.strptime(track['added_at'], '%Y-%m-%dT%H:%M:%SZ') > offset and track['track'] is not None and track['track']['id'] is not None]
+if trackuris:
+    trackurisset = set(trackuris)
+    me = sp.getAuthUser(REFRESH_TOKEN)
+    playlist = sp.getPlaylistFromId(TRACK_PLAYLIST_ID)
+    playlisttracks = sp.getTracksFromItem(playlist)
+    playlisttracksset = {i['track']['uri'] for i in playlisttracks}
+    newtracksset = trackurisset - playlisttracksset
+    me.addSongsToPlaylist(TRACK_PLAYLIST_ID, list(newtracksset))
 if __name__ == '__main__':
     with open(sys.path[0] + '/data.json', 'w') as f:
         json.dump(data, f, indent=4, separators=(',', ': '))
