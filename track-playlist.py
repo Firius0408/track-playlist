@@ -71,7 +71,12 @@ except ValueError:
 
 print('Using UTC offset %s' % offset.strftime("%Y-%m-%d %H:%M:%S"))
 data['timestamp'] = datetime.datetime.utcnow().isoformat()
-users = data['users']
+try:
+    users = data['users']
+except KeyError:
+    print("Could not find 'users' in data.json, exiting...", file=sys.stderr)
+    exit(1)
+
 sp = spotifywebapi.Spotify(CLIENT_ID, CLIENT_SECRET)
 executor = ThreadPoolExecutor()
 topfutures = []
