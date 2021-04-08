@@ -53,8 +53,22 @@ else:
         data = json.load(f)
 
 print('Starting at %s ' % datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"))
-if data['timestamp']:
+try:
     offset = datetime.datetime.fromisoformat(data['timestamp'])
+except KeyError:
+    print('No timestamp found in data.json, setting offset and exiting...', file=sys.stderr)
+    data['timestamp'] = datetime.datetime.utcnow().isoformat()
+    if __name__ == '__main__':
+        with open(sys.path[0] + '/data.json', 'w') as f:
+            json.dump(data, f, indent=4, separators=(',', ': '))
+    else:
+        with open('./data.json', 'w') as f:
+            json.dump(data, f, indent=4, separators=(',', ': '))
+    exit(1)
+except ValueError:
+    print('Incorrectly formatted timestamp found in data.json, exiting...', file=sys.stderr)
+    exit(1)
+
 data['timestamp'] = datetime.datetime.utcnow().isoformat()
 users = data['users']
 sp = spotifywebapi.Spotify(CLIENT_ID, CLIENT_SECRET)
