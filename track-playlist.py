@@ -69,6 +69,7 @@ except ValueError:
     print('Incorrectly formatted timestamp found in data.json, exiting...', file=sys.stderr)
     exit(1)
 
+print('Using UTC offset %s' % offset.strftime("%Y-%m-%d %H:%M:%S"))
 data['timestamp'] = datetime.datetime.utcnow().isoformat()
 users = data['users']
 sp = spotifywebapi.Spotify(CLIENT_ID, CLIENT_SECRET)
