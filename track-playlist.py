@@ -99,7 +99,12 @@ if trackuris:
     playlisttracks = sp.getTracksFromItem(playlist)
     playlisttracksset = {i['track']['uri'] for i in playlisttracks}
     newtracksset = trackurisset - playlisttracksset
-    me.addSongsToPlaylist(TRACK_PLAYLIST_ID, list(newtracksset))
+    if (newtracksset):
+        me.addSongsToPlaylist(TRACK_PLAYLIST_ID, list(newtracksset))
+    else:
+        print('No change')
+else:
+    print('No change')
 if __name__ == '__main__':
     with open(sys.path[0] + '/data.json', 'w') as f:
         json.dump(data, f, indent=4, separators=(',', ': '))
