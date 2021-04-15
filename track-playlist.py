@@ -30,11 +30,15 @@ def runUser(us):
         return
 
     print('Finished pulling playlists for user %s' % us)
+    futures = []
     for playlist in playlists:
         if "Top Songs " in playlist['name'] or playlist['owner']['id'] != us:
             continue
 
-        bottomfutures.append(executor.submit(addTrackUris, playlist))
+        futures.append(executor.submit(addTrackUris, playlist))
+
+    wait(futures)
+    print('Finished pulling tracks for user %s' % us)
 
 def addTrackUris(playlist):
     try:
@@ -79,15 +83,13 @@ except KeyError:
 
 sp = spotifywebapi.Spotify(CLIENT_ID, CLIENT_SECRET)
 executor = ThreadPoolExecutor()
-topfutures = []
-bottomfutures = []
+futures = []
 temptracks = []
 for user in users:
-    topfutures.append(executor.submit(runUser, user))
+    futures.append(executor.submit(runUser, user))
 
-wait(topfutures)
-wait(bottomfutures)
-print('Finished pulling tracks')
+wait(futures)
+print('Finished pulling data')
 executor.shutdown()
 trackuris = [track['track']['uri'] for track in temptracks if datetime.datetime.strptime(track['added_at'], '%Y-%m-%dT%H:%M:%SZ') > offset and track['track'] is not None and track['track']['id'] is not None]
 if trackuris:
